@@ -2,6 +2,8 @@
 ESP32 emulator for LPT/parallel port printers
 
 ![ESP32 wired up to a paralell port breakout](ESP32Printbox.jpg)
+![ESP32 wired up to a paralell port breakout](ESP32Printboxinside.jpg)
+![Demoprint](HM507print.pdf)
 
 ## Project status
 Very rough, but works well enough™   
