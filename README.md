@@ -32,7 +32,7 @@ In a production setup, putting resistors of about 100 Ohms to 5000 Ohms between 
 
 | Name            	| ESP32 Pin 	| LPT Pin 	|
 |-----------------	|-----------	|---------	|
-| !Strobe         	| 13        	| 1       	|
+| !Strobe         	| 34 (changed)| 1       	|
 | D0              	| 4         	| 2       	|
 | D1              	| 14        	| 3       	|
 | D2              	| 27        	| 4       	|
