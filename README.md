@@ -73,7 +73,45 @@ On the parallel port, there are 2 lines called "SELECT", one is "SELECT_IN" (LPT
 **There are wrong pinout graphics on the internet! Don't get fooled!**
 
 ## Virtual PDF printer using CUPS
-Install CUPS and `cups-pdf`, visit CUPS configuration page at https://localhost:631, create a new printer of type "CUPS-PDF" and set it as the default.  
+Install CUPS and `cups-pdf`, visit CUPS configuration page at https://localhost:631, create a new printer of type "CUPS-PDF" and set it as the default. 
+I use a plain Debian LXC on Proxmox and install cups, cups-pdf, cups-bsd (for lpr), nginx and samba.
+To setup the Printer i link CUPS to Port 88. To do this create:
+`/etc/nginx/sites-enabled/drucker` containing (the pass inside is not mine and i think it is not needed - but i also dont want to change this running system):
+```
+server {
+  listen 88;
+  location /.well-known/acme-challenge/ {
+    root /tmp/certbot/;
+    auth_basic off;
+  }
+  # Alle anderen Anfragen an localhost:631 weiterleiten
+  location / {
+    proxy_set_header Authorization "Basic ZHJ1Y2tlcjp0ZXN0";
+    proxy_pass http://127.0.0.1:631;
+  }
+}
+```
+
+To easy get the PDF over samba add this to smb.conf:
+```
+[CUPS-PDFs]
+comment = Samba on Debian
+path = /home/pdf/
+read-only = no
+browsable = yes
+```
+
+And also change /etc/cups/cups-pdf.conf - so search for those 3 Rows inside the file and Change it:
+```
+Out /home/pdf
+```
+```
+AnonUMask 0000
+```
+```
+UserUMask 0000
+```
+
 Create `/etc/systemd/system/printserver@.service` containing
 ```ini
 [Unit]
@@ -99,11 +137,12 @@ Accept=yes
 WantedBy=sockets.target
 ```
 
+modified for PS Output on Scope:
 and a shell script called `/opt/printserver.sh` containing
 ```bash
 #!/bin/bash
 
-lpr -T"`date`"
+lpr -PPDF -T "Scopeprint" -o landscape -l
 ```
 
 Then run
