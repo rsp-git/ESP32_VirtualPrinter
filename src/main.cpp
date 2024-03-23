@@ -5,7 +5,7 @@
 
 WiFiMulti WiFiMulti;
 
-#define PIN_STROBE_N 13
+#define PIN_STROBE_N 34 // Changed due to Boot Problems
 #define PIN_D0 4
 #define PIN_D1 14
 #define PIN_D2 27
@@ -22,10 +22,16 @@ WiFiMulti WiFiMulti;
 #define PIN_ERROR 22
 #define PIN_RESET 21
 #define PIN_SELECTPRINTER_N 19
+#define LED 2
+
+//#define debug
+#ifdef debug
+#warning Debug Active
+#endif
 
 volatile bool strobed = false;
 const uint16_t port = 31337;
-const char * host = "targetIP";
+const char * host = "ip from CUPS Server";
 
 void IRAM_ATTR strobe()
 {
@@ -40,22 +46,8 @@ void setup()
 	rtc_wdt_protect_off();
 	rtc_wdt_disable();
 
-	WiFiMulti.addAP("SSID", "PSK");
-
-	Serial.println();
-	Serial.println();
-	Serial.print("Waiting for WiFi... ");
-
-	while(WiFiMulti.run() != WL_CONNECTED)
-	{
-		Serial.print(".");
-		delay(500);
-	}
-
-	Serial.println("");
-	Serial.println("WiFi connected");
-	Serial.println("IP address: ");
-	Serial.println(WiFi.localIP());
+  pinMode(LED, OUTPUT);
+	digitalWrite(LED, HIGH);
 
 	pinMode(PIN_STROBE_N, INPUT_PULLUP);
 	pinMode(PIN_D0, INPUT_PULLUP);
@@ -90,6 +82,29 @@ void setup()
 	pinMode(PIN_ACK_N, OUTPUT);
 	digitalWrite(PIN_ACK_N, HIGH);
 
+	WiFiMulti.addAP("Idawoell", "XFmpOPE38Nkmp4");
+
+	Serial.println();
+	Serial.println();
+	Serial.print("Waiting for WiFi... ");
+
+	while(WiFiMulti.run() != WL_CONNECTED)
+	{
+		Serial.print(".");
+    for(uint n=0;n<5;n++) {
+      digitalWrite(LED, LOW);
+		  delay(50);
+      digitalWrite(LED, HIGH);
+		  delay(50);
+    }
+	}
+
+	Serial.println("");
+	Serial.println("WiFi connected");
+	Serial.println("IP address: ");
+	Serial.println(WiFi.localIP());
+  digitalWrite(LED, LOW);
+	
 	Serial.println("ready");
 	attachInterrupt(PIN_STROBE_N, strobe, FALLING);
 }
@@ -117,6 +132,7 @@ void loop()
 					return;
 				}
 				Serial.println("connected!");
+        digitalWrite(LED, HIGH);
 			}
 
 
@@ -131,9 +147,11 @@ void loop()
 			bitWrite(data, 5, digitalRead(PIN_D5));
 			bitWrite(data, 6, digitalRead(PIN_D6));
 			bitWrite(data, 7, digitalRead(PIN_D7));
-			//Serial.write(data);
-			//Serial.flush();
-			
+      #ifdef debug
+			Serial.write(data);
+			Serial.flush();
+			#endif
+
 			client.write(data);
 			lastByte = millis();
 
@@ -143,9 +161,10 @@ void loop()
 			digitalWrite(PIN_ACK_N, HIGH);
 		}
 
-		if ((lastByte + 1000 < millis()) && printActive)
+		if ((lastByte + 4000 < millis()) && printActive) // Increase Timeout for old slow Scope ;)
 		{
 			Serial.println("No data for a while. Ending TCP connection.");
+      digitalWrite(LED, LOW);
 			client.stop();
 			printActive = false;
 		}
