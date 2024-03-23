@@ -1,7 +1,7 @@
 # ESP32_VirtualPrinter
 ESP32 emulator for LPT/parallel port printers
 
-![ESP32 wired up to a paralell port breakout](https://screenshot.tbspace.de/jzxolmihteg.jpg)
+![ESP32 wired up to a paralell port breakout](ESP32Printbox.jpg)
 
 ## Project status
 Very rough, but works well enough™   
